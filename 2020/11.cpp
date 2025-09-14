@@ -1,12 +1,29 @@
 /*
 	t = 36:47 min
 	precej lahko
+	t = 59:34 min
+	nekoliko lahko
 */
 
 #include <iostream>
 #include <fstream>
 #include <string>
 #include <vector>
+
+
+class Tocka {
+public:
+	int x, y;
+	Tocka() : x(0), y(0) {}
+	Tocka(int x, int y) : x(x), y(y) {}
+};
+Tocka operator+(const Tocka& to1, const Tocka& to2) {
+	return Tocka(to1.x + to2.x, to1.y + to2.y);
+}
+Tocka& operator+=(Tocka& to1, const Tocka& to2) {
+	to1 = to1 + to2;
+	return to1;
+}
 
 
 std::vector<std::string> preberiPodatke(const std::string& pot) {
@@ -31,6 +48,9 @@ std::vector<std::string> preberiPodatke(const std::string& pot) {
 	return resitev;
 }
 
+bool izvenMeja(const std::vector<std::string>& mapa, const int& y, const int& x) {
+	return (y < 0 || y >= mapa.size() || x < 0 || x > mapa[y].size());
+}
 
 int steviloZasedenihSosed(const std::vector<std::string>& mapa, const int y, const int x) {
 
@@ -45,7 +65,7 @@ int steviloZasedenihSosed(const std::vector<std::string>& mapa, const int y, con
 			int yyy = y + yy;
 			int xxx = x + xx;
 
-			if (yyy < 0 || yyy >= mapa.size() || xxx < 0 || xxx > mapa[yyy].size())
+			if (izvenMeja(mapa, yyy, xxx))
 				continue;
 
 			resitev += mapa[yyy][xxx] == '#';
@@ -54,7 +74,7 @@ int steviloZasedenihSosed(const std::vector<std::string>& mapa, const int y, con
 	return resitev;
 }
 
-int simulirajSedeze(std::vector<std::string> zacetnaMapa) {
+int simulirajSedeze1(std::vector<std::string> zacetnaMapa) {
 
 	int resitev = 0;
 
@@ -101,13 +121,95 @@ int simulirajSedeze(std::vector<std::string> zacetnaMapa) {
 }
 
 
+int steviloZasedenihVrst(const std::vector<std::string>& mapa, const int& y, const int& x) {
+
+	int resitev = 0;
+
+	std::vector<Tocka> seznamVrst;
+	seznamVrst.push_back(Tocka(1, 0));
+	seznamVrst.push_back(Tocka(1, 1));
+	seznamVrst.push_back(Tocka(0, 1));
+	seznamVrst.push_back(Tocka(-1, 1));
+	seznamVrst.push_back(Tocka(-1, 0));
+	seznamVrst.push_back(Tocka(-1, -1));
+	seznamVrst.push_back(Tocka(0, -1));
+	seznamVrst.push_back(Tocka(1, -1));
+	
+	for (const Tocka& soseda : seznamVrst) {
+
+		Tocka iskana(x, y);
+
+	ZANKA:
+		iskana += soseda;
+
+		if (izvenMeja(mapa, iskana.y, iskana.x))
+			continue;
+
+		if (mapa[iskana.y][iskana.x] == '.')
+			goto ZANKA;
+
+		resitev += mapa[iskana.y][iskana.x] == '#';
+	}
+
+	return resitev;
+}
+
+int simulirajSedeze2(std::vector<std::string> zacetnaMapa) {
+
+	int resitev = 0;
+
+	std::vector<std::string> novaMapa = zacetnaMapa;
+
+	while (true) {
+
+		bool niSpremembe = true;
+
+		for (int y = 0; y < zacetnaMapa.size(); y++)
+			for (int x = 0; x < zacetnaMapa[y].size(); x++) {
+
+				switch (zacetnaMapa[y][x]) {
+				case 'L':
+					if (steviloZasedenihVrst(zacetnaMapa, y, x) == 0) {
+						novaMapa[y][x] = '#';
+						niSpremembe = false;
+					}
+					break;
+
+				case '#':
+					if (steviloZasedenihVrst(zacetnaMapa, y, x) >= 5) {
+						novaMapa[y][x] = 'L';
+						niSpremembe = false;
+					}
+					break;
+
+				default:
+					break;
+				}
+			}
+
+		if (niSpremembe)
+			break;
+
+		zacetnaMapa = novaMapa;
+	}
+
+	for (const auto& vrstica : novaMapa)
+		for (const auto& c : vrstica)
+			resitev += c == '#';
+
+	return resitev;
+}
+
+
 int main() {
 
 	std::vector<std::string> bazaPodatkov(preberiPodatke("2020/11.txt"));
 
-	int resitev1 = simulirajSedeze(bazaPodatkov);
+	int resitev1 = simulirajSedeze1(bazaPodatkov);
 	std::cout << "Stevilo zasedenih sedezev po umiritvi je " << resitev1 << ".\n";
 
+	int resitev2 = simulirajSedeze2(bazaPodatkov);
+	std::cout << "Stevilo zasedenih sedezev po umiritvi je " << resitev2 << ".\n";
 
 	return 0;
 }
