@@ -1,3 +1,10 @@
+/*
+	t = 43:17 min
+	lahko
+	t = 26:21 min
+	lahko
+*/
+
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -33,6 +40,24 @@ public:
 
 	int manhatenRazdalja() const {
 		return abs(x) + abs(y);
+	}
+
+	void rotirajOkoliNicle(const char& smer, int vrednost) {
+		while (vrednost > 0) {
+			int vmesna = y;
+			y = x;
+			x = vmesna;
+			if (smer == 'L')
+				x *= -1;
+			else if (smer == 'R')
+				y *= -1;
+			vrednost -= 90;
+		}
+	}
+
+	void pomakniNaprej2(const int& vrednost, const Tocka& smernaTocka) {
+		x += smernaTocka.x * vrednost;
+		y += smernaTocka.y * vrednost;
 	}
 };
 
@@ -80,6 +105,36 @@ void premakniLadjo(Tocka& ladja, const char& simbol, const int& vrednost) {
 	}
 }
 
+void premakniSmernoTocko(Tocka& ladja, Tocka& smernaTocka, const char& simbol, const int& vrednost) {
+
+	switch (simbol) {
+	case 'N':
+		smernaTocka.y += vrednost;
+		break;
+	case 'E':
+		smernaTocka.x += vrednost;
+		break;
+	case 'S':
+		smernaTocka.y -= vrednost;
+		break;
+	case 'W':
+		smernaTocka.x -= vrednost;
+		break;
+	case 'F':
+		ladja.pomakniNaprej2(vrednost, smernaTocka);
+		break;
+	case 'R':
+		smernaTocka.rotirajOkoliNicle(simbol, vrednost);
+		break;
+	case 'L':
+		smernaTocka.rotirajOkoliNicle(simbol, vrednost);
+		break;
+	default:
+		std::cout << "NAPAKA - premakniSmernoTocko\n";
+		break;
+	}
+}
+
 std::pair<int, int> preberiPodatke(const std::string& pot) {
 
 	int resitev1 = 0;
@@ -93,7 +148,8 @@ std::pair<int, int> preberiPodatke(const std::string& pot) {
 		return { resitev1,resitev2 };
 	}
 
-	Tocka ladja;
+	Tocka ladja1, ladja2;
+	Tocka smernaTocka(10, 1);
 
 	char simbol;
 	int vrednost;
@@ -102,12 +158,14 @@ std::pair<int, int> preberiPodatke(const std::string& pot) {
 
 		podatki >> simbol >> vrednost;
 
-		premakniLadjo(ladja, simbol, vrednost);
+		premakniLadjo(ladja1, simbol, vrednost);
+		premakniSmernoTocko(ladja2, smernaTocka, simbol, vrednost);
 	}
 
 	podatki.close();
 
-	resitev1 = ladja.manhatenRazdalja();
+	resitev1 = ladja1.manhatenRazdalja();
+	resitev2 = ladja2.manhatenRazdalja();
 
 	return { resitev1, resitev2 };
 }
@@ -118,7 +176,7 @@ int main() {
 	std::pair<int, int> resitve = preberiPodatke("2020/12.txt");
 
 	std::cout << "Manhaten razdalja je " << resitve.first << ".\n";
-	std::cout << "Manhaten razdalja je " << resitve.second << ".\n";
+	std::cout << "Manhaten razdalja s smerno tocko je " << resitve.second << ".\n";
 
 	return 0;
 }
