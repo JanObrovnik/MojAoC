@@ -61,6 +61,8 @@ std::map<int, std::bitset<36>> preberiPodatke(const std::string& pot) {
 		}
 	}
 
+	podatki.close();
+
 	return resitev;
 }
 
@@ -143,6 +145,8 @@ std::map<long long, long long> preberiPodatke2(const std::string& pot) {
 			zapisiVSpomin(resitev, maska, mesto, vrednost);
 		}
 	}
+
+	podatki.close();
 
 	return resitev;
 }
