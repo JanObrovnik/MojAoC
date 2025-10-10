@@ -1,12 +1,15 @@
 /*
 	t = 37:23 min
 	precej lahko
+	t = 48:46 min
+	nekoliko tezko
 */
 
 #include <iostream>
 #include <fstream>
 #include <string>
 #include <vector>
+#include <unordered_map>
 
 #define NEVELJAVNO -1
 
@@ -37,7 +40,7 @@ std::vector<short> preberiPodatke(const std::string& pot) {
 }
 
 
-short najdiNaKoraku(std::vector<short> podatki, const short& iskanKorak = 2020) {
+short najdiNaKorakuMK1(std::vector<short> podatki, const short& iskanKorak = 2020) {
 
 	while (podatki.size() != iskanKorak) {
 
@@ -56,23 +59,56 @@ short najdiNaKoraku(std::vector<short> podatki, const short& iskanKorak = 2020) 
 			podatki.push_back(podatki.size() - mestoIstegaStevila - 1);
 	}
 
-	//for (auto i : podatki)
-	//	std::cout << i << '\n';
-
 	return podatki.back();
+}
+
+int najdiNaKorakuMK2(const std::vector<short>& podatki, const int& iskanKorak = 2020) {
+
+	int mesto = 1;
+
+	std::unordered_map<int, int> spomin;
+
+	for (int i = 0; i < podatki.size() - 1; i++)
+		spomin[int(podatki[i])] = mesto++;
+
+	int zadnjaVrednost = podatki.back();
+
+	while (mesto < iskanKorak) {
+		
+		if (mesto % (iskanKorak/100) == 0)
+			std::cout << 100ll*mesto/iskanKorak << "%\n";
+		
+		auto it = spomin.find(zadnjaVrednost);
+
+		if (it == spomin.end()) {
+			spomin[zadnjaVrednost] = mesto;
+			zadnjaVrednost = 0;
+		}
+		else {
+			const int trenutnoMesto = it->second;
+			spomin[zadnjaVrednost] = mesto;
+			zadnjaVrednost = mesto - trenutnoMesto;
+		}
+
+		mesto++;
+	}
+
+	return zadnjaVrednost;
 }
 
 
 int main() {
 
 	std::vector<short> podatki(preberiPodatke("2020/15.txt"));
-	
-	short korak = 2020;
-	short resitev1 = najdiNaKoraku(podatki, korak);
+
+	int korak = 2020;
+	short resitev1 = najdiNaKorakuMK1(podatki, korak);
 	std::cout << "Na koraku " << korak << " je bila receno stevilo " << resitev1 << ".\n";
 
+	korak = 30000000;
+	int resitev2 = najdiNaKorakuMK2(podatki, korak);
+	std::cout << "Na koraku " << korak << " je bila receno stevilo " << resitev2 << ".\n\n";
 	
-
 
 	return 0;
 }
