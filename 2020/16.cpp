@@ -1,13 +1,17 @@
 /*
 	t = 1:11:02 h
 	relativno lahko
+	t = 1:35:48 h
+	sredja tezavnost
 */
 
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <string>
 #include <vector>
 #include <map>
+#include <set>
 
 
 struct Polja {
@@ -51,20 +55,34 @@ struct Polja {
 			const std::vector<std::pair<short, short>>& vec = it.second;
 			if ((vrednost >= vec.front().first && vrednost <= vec.front().second) ||
 				(vrednost >= vec.back().first && vrednost <= vec.back().second))
-				return 0;
+				return -1;
 		}
 		return vrednost;
 	}
+
+	bool veljavenZnotraj(const short& vrednost, const std::string& naziv) const {
+
+		const std::vector<std::pair<short, short>>& vec = seznamPolj.at(naziv);
+
+		if ((vrednost >= vec.front().first && vrednost <= vec.front().second) ||
+			(vrednost >= vec.back().first && vrednost <= vec.back().second))
+			return true;
+
+		return false;
+	}
 };
-
-
 
 struct Karta {
 	std::vector<short> seznamVrednosti;
-
-
 };
 
+
+std::string prvaBesedaStavka(const std::string& stavek) {
+	std::stringstream ss(stavek);
+	std::string resitev;
+	ss >> resitev;
+	return resitev;
+}
 
 
 void preberiPodatke(const std::string& pot,
@@ -121,6 +139,103 @@ int najdiNeveljavneBliznjeKarte(const Polja& polje, const std::vector<Karta>& bl
 }
 
 
+void izbrisiNeveljavneKarte(const Polja& polje, std::vector<Karta>& bliznjeKarte) {
+
+	for (int i = 0; i < bliznjeKarte.size(); i++) {
+		int napake = 0;
+		for (const short& vrednost : bliznjeKarte[i].seznamVrednosti)
+			napake += polje.veljaven(vrednost);
+		if (napake != -1 * polje.velikost()) {
+			bliznjeKarte.erase(bliznjeKarte.begin() + i);
+			i--;
+		}
+	}
+	//std::cout << najdiNeveljavneBliznjeKarte(polje, bliznjeKarte)<<'\n';
+}
+std::map<std::string, short> urediSeznamNazivov(std::vector<std::set<std::string>>& seznamNazivov) {
+
+	std::map<std::string, short> resitev;
+
+	while (true) {
+
+		bool koncaj = true;
+		std::string trenutenNaziv = "";
+
+		for (int i = 0; i < seznamNazivov.size(); i++) {
+			//std::cout << set.size() << '\n';
+			if (seznamNazivov[i].size() == 1) {
+				trenutenNaziv = *seznamNazivov[i].begin();
+				resitev[trenutenNaziv] = i;
+				koncaj = false;
+				break;
+			}
+		}
+
+		for (std::set<std::string>& set : seznamNazivov) {
+			set.erase(trenutenNaziv);
+		}
+
+		if (koncaj)
+			break;
+	}
+	
+
+	//for (auto it : resitev)
+	//	std::cout << it.first << '\t' << it.second << '\n';
+
+	return resitev;
+}
+long long dolociMojoStevilko(const std::map<std::string, short>& podatki, const Karta& mojaKarta) {
+
+	long long resitev = 1;
+
+	for (const auto& it : podatki)
+		if (prvaBesedaStavka(it.first) == "departure")
+			resitev *= mojaKarta.seznamVrednosti[it.second];
+
+	return resitev;
+}
+
+long long najdiSvojoKarto(const Polja& polje, const Karta& mojaKarta, std::vector<Karta> bliznjeKarte) {
+
+	izbrisiNeveljavneKarte(polje, bliznjeKarte);
+
+	std::vector<std::set<std::string>> seznamNazivov(polje.velikost());
+
+	for (int i = 0; i < seznamNazivov.size(); i++) {
+		for (const auto& it : polje.seznamPolj) {
+			seznamNazivov[i].insert(it.first);
+		}
+	}
+
+
+	for (const Karta& karta : bliznjeKarte) {
+
+		for (int i = 0; i < karta.seznamVrednosti.size(); i++) {
+
+			std::vector<std::string> seznamNeveljavnihNazivov{};
+
+			for (const std::string& naziv : seznamNazivov[i]) {
+			
+				if (!polje.veljavenZnotraj(karta.seznamVrednosti[i], naziv))
+					seznamNeveljavnihNazivov.push_back(naziv);
+			}
+
+			for (const std::string& naziv : seznamNeveljavnihNazivov) {
+
+				seznamNazivov[i].erase(naziv);
+			}
+		}
+	}
+
+
+	const std::map<std::string, short>& urejeniPodatki(urediSeznamNazivov(seznamNazivov));
+
+
+	return dolociMojoStevilko(urejeniPodatki, mojaKarta);
+}
+
+
 int main() {
 
 	Polja polje;
@@ -131,6 +246,9 @@ int main() {
 
 	int resitev1 = najdiNeveljavneBliznjeKarte(polje, bliznjeKarte);
 	std::cout << "Vsota neveljavnih stevil na bliznjih kartah je " << resitev1 << ".\n";
+
+	long long resitev2 = najdiSvojoKarto(polje, mojaKarta, bliznjeKarte);
+	std::cout << "Zmnozek mojih iskanih podatkov je " << resitev2 << ".\n";
 
 
 	return 0;
