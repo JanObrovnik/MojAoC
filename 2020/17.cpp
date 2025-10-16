@@ -1,6 +1,8 @@
 /*
 	t ~ 8 h
 	nekoliko tezko
+	t = 1:44 min
+	zelo lahko
 */
 
 #include <iostream>
@@ -244,22 +246,15 @@ int main() {
 	std::vector<Tocka<2>> podatki = PreberiPodatke("2020/17.txt");
 	//for (auto to : podatki)
 	//	std::cout << to << '\n';
-	//std::cout << '\n';
 
 	std::vector<Tocka<3>> podatki3D = razsiri<3,2>(podatki);
 	long long resitev1 = steviloAktivnih(podatki3D, 6);
-	std::cout << "Po 6 korakih je stevilo aktivnih kock " << resitev1 << ".\n";
+	std::cout << "Po 6 korakih je stevilo 3D aktivnih kock " << resitev1 << ".\n";
 	
-
-
-
-	
-
-
-
+	std::vector<Tocka<4>> podatki4D = razsiri<4, 2>(podatki);
+	long long resitev2 = steviloAktivnih(podatki4D, 6);
+	std::cout << "Po 6 korakih je stevilo 4D aktivnih kock " << resitev2 << ".\n";
 
 
 	return 0;
 }
-
-
