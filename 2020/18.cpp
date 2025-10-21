@@ -1,6 +1,8 @@
 /*
 	t = 57:56 min
 	precej lahko
+	t = 16:21 min
+	zelo lahko
 */
 
 #include <iostream>
@@ -92,6 +94,14 @@ std::pair<std::vector<long long>::const_iterator, std::vector<long long>::const_
 
 	return { it1,it2 };
 }
+std::vector<long long>::const_iterator najdiPlus(const std::vector<long long>& vec) {
+
+	for (std::vector<long long>::const_iterator it = vec.begin(); it != vec.end(); it++)
+		if (*it == MATH::Plus)
+			return it - 1;
+
+	return vec.cend();
+}
 long long izracunajNovoVrednost(const std::vector<long long>::const_iterator& it) {
 	if (*(it + 1) == MATH::Plus)
 		return *it + *(it + 2);
@@ -101,7 +111,7 @@ long long izracunajNovoVrednost(const std::vector<long long>::const_iterator& it
 	return -1;
 }
 
-long long izracunajPodatek(std::vector<long long> podatek) {
+long long izracunajPodatek(std::vector<long long> podatek, const int& del) {
 
 	while (podatek.size() > 1) {
 
@@ -116,7 +126,7 @@ long long izracunajPodatek(std::vector<long long> podatek) {
 			}
 			else if (it.second - it.first > 4) {
 				std::vector<long long> podPodatek(it.first + 1, it.second);
-				novaVrednost = izracunajPodatek(podPodatek);
+				novaVrednost = izracunajPodatek(podPodatek, del);
 			}
 			else {
 				std::cout << "Napaka - izracunajPodatek()\n";
@@ -127,25 +137,46 @@ long long izracunajPodatek(std::vector<long long> podatek) {
 			podatek.erase(it.first, it.second + 1);
 			podatek.insert(podatek.begin() + mesto, novaVrednost);
 		}
-		else {
+		else if (del == 1) {
 
 			long long novaVrednost = izracunajNovoVrednost(podatek.begin());
 
 			podatek.erase(podatek.begin(), podatek.begin() + 3);
 			podatek.insert(podatek.begin(), novaVrednost);
 		}
+		else if (del == 2) {
+
+			std::vector<long long>::const_iterator itP = najdiPlus(podatek);
+
+			if (itP != podatek.end()) {
+
+				long long novaVrednost = izracunajNovoVrednost(itP);
+
+				int mesto = itP - podatek.begin();
+
+				podatek.erase(itP, itP + 3);
+				podatek.insert(podatek.begin() + mesto, novaVrednost);
+			}
+			else {
+
+				long long novaVrednost = izracunajNovoVrednost(podatek.begin());
+
+				podatek.erase(podatek.begin(), podatek.begin() + 3);
+				podatek.insert(podatek.begin(), novaVrednost);
+			}
+		}
 	}
 
 	return podatek.front();
 }
 
-long long izracunajPodatke(const std::vector<std::vector<long long>>& bazaPodatkov) {
+long long izracunajPodatke(const std::vector<std::vector<long long>>& bazaPodatkov, int del = 1) {
 
 	long long resitev = 0;
 
 	for (const std::vector<long long>& podatek : bazaPodatkov) {
-		resitev += izracunajPodatek(podatek);
-		std::cout << resitev<< '\n';
+		resitev += izracunajPodatek(podatek, del);
+		//std::cout << izracunajPodatek(podatek, del) << '\n';
 	}
 
 	return resitev;
@@ -157,8 +188,11 @@ int main() {
 	std::vector<std::vector<long long>> bazaPodatkov(preberiPodatke("2020/18.txt"));
 	//printPodatke(bazaPodatkov);
 
-	long long resitev1 = izracunajPodatke(bazaPodatkov);
+	long long resitev1 = izracunajPodatke(bazaPodatkov, 1);
 	std::cout << "Vsota vseh izracunov je " << resitev1 << ".\n";
+
+	long long resitev2 = izracunajPodatke(bazaPodatkov, 2);
+	std::cout << "Vsota vseh izracunov je " << resitev2 << ".\n";
 
 
 	return 0;
