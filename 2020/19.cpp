@@ -1,6 +1,8 @@
 /*
 	t ~ 3:33 ur
 	nekoliko tezko
+	t ~ 4:35 ur
+	tezko
 */
 
 #include <iostream>
@@ -9,6 +11,7 @@
 #include <string>
 #include <vector>
 #include <set>
+#include <map>
 #include <unordered_set>
 #include <algorithm>
 
@@ -53,15 +56,15 @@ public:
 				menjava /= seznamPravil[i].koda.size();
 
 				int index = 0;
-				int domenjave = 0;
+				int doMenjave = 0;
 
 				for (std::string& kod : novaKoda) {
 
 					kod += seznamPravil[i].koda[index % seznamPravil[i].koda.size()];
 					
-					domenjave++;
-					if (domenjave == menjava) {
-						domenjave = 0;
+					doMenjave++;
+					if (doMenjave == menjava) {
+						doMenjave = 0;
 						index++;
 					}
 				}
@@ -72,14 +75,58 @@ public:
 		}
 	}
 
-	bool moznoRazbratiKodo(const std::set<short>& seznamID) const {
+	bool moznoRazbratiKodo(std::set<short> seznamID) const {
 		
+		seznamID.insert(id);
+
 		std::vector<short> skupnoSledenje;
 		for (const std::vector<short>& vec : sledenje)
 			for (const short& i : vec)
 				skupnoSledenje.push_back(i);
 		
 		return std::all_of(skupnoSledenje.begin(), skupnoSledenje.end(), [&](const short& i) {return seznamID.find(i) != seznamID.end(); });
+	}
+
+	void razberiKodoSPonavljanjem(const std::vector<Pravilo>& seznamPravil, const short maxDolzina) {
+		
+		const std::vector<short>& vec = sledenje.front();
+
+		int menjava = 1;
+		for (const short& i : vec)
+			menjava *= seznamPravil[i].koda.size();
+
+		std::vector<std::string> novaKoda(menjava, "");
+
+		for (const short& i : vec) {
+
+			menjava /= seznamPravil[i].koda.size();
+
+			int index = 0;
+			int doMenjave = 0;
+
+			for (std::string& kod : novaKoda) {
+
+				kod += seznamPravil[i].koda[index % seznamPravil[i].koda.size()];
+
+				doMenjave++;
+				if (doMenjave == menjava) {
+					doMenjave = 0;
+					index++;
+				}
+			}
+		}
+
+		for (const std::string& kod : novaKoda)
+			koda.push_back(kod);
+	}
+
+	bool zajemaSamSebe() {
+
+		for (const std::vector<short>& vec : sledenje)
+			for (const short& i : vec)
+				if (i == id)
+					return true;
+		return false;
 	}
 
 
@@ -161,7 +208,7 @@ std::pair<std::vector<Pravilo>, std::vector<std::string>> preberiPodatke(const s
 }
 
 
-std::unordered_set<std::string> razberiKodoZaID(std::vector<Pravilo> seznamPravil, const short& id) {
+std::unordered_set<std::string> razberiKodoZaID(std::vector<Pravilo> seznamPravil, const short& id, const short& maxDolzina) {
 
 	std::set<short> seznamZnanihKod;
 
@@ -170,16 +217,22 @@ std::unordered_set<std::string> razberiKodoZaID(std::vector<Pravilo> seznamPravi
 			seznamZnanihKod.insert(pravilo.dobiID());
 
 	while (seznamPravil[id].velikost() == 0) {
-		//std::cout << '\n';
+
 		for (Pravilo& pravilo : seznamPravil) {
 
 			if (seznamZnanihKod.find(pravilo.dobiID()) != seznamZnanihKod.end())
 				continue;
 
-			//std::cout << pravilo.dobiID() << ": " << pravilo.moznoRazbratiKodo(seznamZnanihKod) << '\n';
 			if (pravilo.moznoRazbratiKodo(seznamZnanihKod)) {
-				pravilo.razberiKodo(seznamPravil);
-				seznamZnanihKod.insert(pravilo.dobiID());
+
+				if (pravilo.zajemaSamSebe()) {
+					pravilo.razberiKodoSPonavljanjem(seznamPravil, maxDolzina);
+					seznamZnanihKod.insert(pravilo.dobiID());
+				}
+				else {
+					pravilo.razberiKodo(seznamPravil);
+					seznamZnanihKod.insert(pravilo.dobiID());
+				}
 			}
 		}
 	}
@@ -187,13 +240,75 @@ std::unordered_set<std::string> razberiKodoZaID(std::vector<Pravilo> seznamPravi
 	return seznamPravil[id].dobiKodoSet();
 }
 
-int steviloPrekrivanaj(const std::vector<std::string>& seznamKod1, const std::unordered_set<std::string>& seznamKod2) {
+int steviloPrekrivanja(const std::vector<std::string>& seznamKod1, const std::unordered_set<std::string>& seznamKod2) {
 
 	int resitev = 0;
 
 	for (const std::string& koda1 : seznamKod1)
 		if (seznamKod2.find(koda1) != seznamKod2.end())
 			resitev++;
+
+	return resitev;
+}
+
+bool moznoSestavitiNivo0(const std::string& subKoda, const short& velikostKode, const std::unordered_set<std::string>& setKod) {
+
+	std::vector<std::string> seznamDelovKode;
+
+	for (short meja = 0; meja < subKoda.size(); meja += velikostKode)
+		seznamDelovKode.push_back(subKoda.substr(meja, velikostKode));
+
+	return std::all_of(seznamDelovKode.begin(), seznamDelovKode.end(), [&](const std::string& i) {return setKod.find(i) != setKod.end(); });
+}
+bool moznoSestavitiNivo1(const std::string& subKoda, const std::vector<std::unordered_set<std::string>>& seznamVeljavnihKod, const short& maxDolzina) {
+
+	const short& velikostKode0 = seznamVeljavnihKod[0].begin()->size();
+	const short& velikostKode1 = seznamVeljavnihKod[1].begin()->size();
+
+	const short meja = subKoda.size() / 2;
+
+	const std::string& kodaDel0 = subKoda.substr(0, meja);
+	const std::string& kodaDel1 = subKoda.substr(meja);
+
+	if (moznoSestavitiNivo0(kodaDel0, velikostKode0, seznamVeljavnihKod[0]) && moznoSestavitiNivo0(kodaDel1, velikostKode1, seznamVeljavnihKod[1]))
+		return true;
+
+	return false;
+}
+
+int steviloPrekrivanja(const std::vector<std::string>& vektorKod, const std::vector<std::unordered_set<std::string>>& seznamVeljavnihKod, const short& maxDolzina) {
+
+	int resitev = 0;
+
+	for (const std::string& gledanaKoda : vektorKod) {
+
+		const short& velikostKode0 = seznamVeljavnihKod[0].begin()->size();
+		const short& velikostKode1 = seznamVeljavnihKod[1].begin()->size();
+
+		for (short meja = velikostKode0; meja < maxDolzina - velikostKode1; meja += velikostKode0) {
+		
+			const std::string& kodaDel0 = gledanaKoda.substr(0, meja);
+			const std::string& kodaDel1 = gledanaKoda.substr(meja);
+
+			if (kodaDel1.empty())
+				break;
+		
+			if (kodaDel1.size() % velikostKode1 != 0)
+				continue;
+			
+
+			bool obstaja0 = moznoSestavitiNivo0(kodaDel0, velikostKode0, seznamVeljavnihKod[0]);
+			if (!obstaja0) break;
+		
+			const std::vector<std::unordered_set<std::string>> seznamSubVeljavnihKod(seznamVeljavnihKod.begin() + 2, seznamVeljavnihKod.end());
+			bool obstaja1 = moznoSestavitiNivo1(kodaDel1, seznamSubVeljavnihKod, maxDolzina);
+			if (!obstaja1) continue;
+
+
+			resitev++;
+			break;
+		}
+	}
 
 	return resitev;
 }
@@ -228,11 +343,26 @@ int main() {
 	std::vector<std::string>& seznamKod = podatki.second;
 	//printPodatke(seznamPravil, seznamKod);
 
-	std::unordered_set<std::string> seznamVeljavnihKod = razberiKodoZaID(seznamPravil, 0);
+	short maxDolzina = 0;
+	for (const std::string koda : seznamKod)
+		maxDolzina = (koda.size() > maxDolzina) ? koda.size() : maxDolzina;
 
-	int resitev1 = steviloPrekrivanaj(seznamKod, seznamVeljavnihKod);
 
+	std::unordered_set<std::string> veljavneKode = razberiKodoZaID(seznamPravil, 0, maxDolzina);
+	
+	int resitev1 = steviloPrekrivanja(seznamKod, veljavneKode);
 	std::cout << "Stevilo vseh kod, ki se prekrivajo je " << resitev1 << ".\n";
+
+
+	seznamPravil[8].dolociSledenje({ 42,8 });
+	seznamPravil[11].dolociSledenje({ 42,11,31 });
+	
+	std::vector<std::unordered_set<std::string>> seznamVeljavnihKod;
+	for (short i : {8,11,42,31})
+		seznamVeljavnihKod.push_back(razberiKodoZaID(seznamPravil, i, maxDolzina));
+
+	int resitev2 = steviloPrekrivanja(seznamKod, seznamVeljavnihKod, maxDolzina);
+	std::cout << "Stevilo vseh kod, ki se prekrivajo z ponavljanjem je " << resitev2 << ".\n";
 
 
 	return 0;
