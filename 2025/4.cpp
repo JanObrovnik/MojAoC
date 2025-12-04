@@ -59,7 +59,7 @@ int steviloSosed(const std::vector<std::string>& bazaPodatkov, const int& x, con
 	return resitev;
 }
 
-int poisciSteviloOsamelihTock(std::vector<std::string> bazaPodatkov, std::vector<std::string>* kazalecPodatkov = nullptr, const int& prevelikoSteviloSosed = 4) {
+int poisciSteviloOsamelihTock(const std::vector<std::string>& bazaPodatkov, std::vector<std::string>* kazalecPodatkov = nullptr, const int& prevelikoSteviloSosed = 4) {
 
 	int resitev = 0;
 
