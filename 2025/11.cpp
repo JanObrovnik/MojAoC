@@ -162,7 +162,7 @@ int main() {
 	resitev2 *= poisciSteviloPotiOdDo(novePovezave, "svr", vmesni0);
 	resitev2 *= poisciSteviloPotiOdDo(novePovezave, vmesni0, vmesni1);
 	resitev2 *= poisciSteviloPotiOdDo(novePovezave, vmesni1, "out");
-	std::cout << "Obstaja " << resitev2 << " razlicnih poti, ki potujejo med" << vmesni1 << " in " << vmesni1 << ".\n";
+	std::cout << "Obstaja " << resitev2 << " razlicnih poti, ki potujejo med: " << vmesni1 << " in " << vmesni1 << ".\n";
 
 
 
