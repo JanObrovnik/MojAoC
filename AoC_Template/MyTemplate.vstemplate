@@ -1,0 +1,16 @@
+<VSTemplate Version="3.0.0" xmlns="http://schemas.microsoft.com/developer/vstemplate/2005" Type="Item">
+  <TemplateData>
+    <DefaultName>AoC.cpp</DefaultName>
+    <Name>AoC</Name>
+    <Description>Template for AoC</Description>
+    <ProjectType>VC</ProjectType>
+    <SortOrder>10</SortOrder>
+    <Icon>__TemplateIcon.png</Icon>
+    <PreviewImage>__PreviewImage.png</PreviewImage>
+  </TemplateData>
+  <TemplateContent>
+    <References />
+	  <ProjectItem SubType="" TargetFileName="$fileinputname$.cpp" ReplaceParameters="true">aoc.cpp</ProjectItem>
+	  <ProjectItem SubType="" TargetFileName="$fileinputname$.txt">aoc.txt</ProjectItem>
+  </TemplateContent>
+</VSTemplate>
