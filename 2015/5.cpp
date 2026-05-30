@@ -1,6 +1,8 @@
 /*
 	t = 39:45 min
 	lahko
+	t = 9:17 min
+	zelo lahko
 */
 
 #include <iostream>
@@ -35,7 +37,7 @@ std::vector<std::string> preberiPodatke(const std::string& pot) {
 }
 
 
-bool pogoj1(std::string& podatek) {
+bool pogoj11(std::string& podatek) {
 	
 	std::string samoglasniki = "aeiou";
 	
@@ -49,7 +51,7 @@ bool pogoj1(std::string& podatek) {
 
 	return ponovitev == 3 ? true : false;
 }
-bool pogoj2(std::string& podatek) {
+bool pogoj12(std::string& podatek) {
 
 	if (podatek.size() < 2) return false;
 
@@ -58,7 +60,7 @@ bool pogoj2(std::string& podatek) {
 
 	return false;
 }
-bool pogoj3(std::string& podatek) {
+bool pogoj13(std::string& podatek) {
 	
 	std::vector<std::string> seznamNezeljenih = { "ab","cd","pq","xy" };
 
@@ -68,18 +70,51 @@ bool pogoj3(std::string& podatek) {
 	return true;
 }
 
-bool pogojiVsi(std::string& podatek) {
+bool pogojiVsi1(std::string& podatek) {
 
-	//std::cout << podatek << " : " << pogoj1(podatek) << "|" << pogoj2(podatek) << "|" << pogoj3(podatek) << '\n';
-	return pogoj1(podatek) && pogoj2(podatek) && pogoj3(podatek);
+	//std::cout << podatek << " : " << pogoj11(podatek) << "|" << pogoj12(podatek) << "|" << pogoj13(podatek) << '\n';
+	return pogoj11(podatek) && pogoj12(podatek) && pogoj13(podatek);
 }
 
-int steviloDobrih(std::vector<std::string>& podatki) {
+int steviloDobrih1(std::vector<std::string>& podatki) {
 
 	int resitev = 0;
 
 	for (std::string& podatek : podatki)
-		resitev += pogojiVsi(podatek);
+		resitev += pogojiVsi1(podatek);
+
+	return resitev;
+}
+
+
+bool pogoj21(std::string& podatek) {
+
+	for (int i = 0; i < podatek.size() - 1; i++)
+		for (int j = i + 2; j < podatek.size() - 1; j++)
+			if (podatek.substr(i, 2) == podatek.substr(j, 2)) return true;
+
+	return false;
+}
+bool pogoj22(std::string& podatek) {
+
+	for (int i = 0; i < podatek.size() - 2; i++)
+		if (podatek[i] == podatek[i + 2]) return true;
+
+	return false;
+}
+
+bool pogojiVsi2(std::string& podatek) {
+
+	//std::cout << podatek << " : " << pogoj21(podatek) << "|" << pogoj22(podatek) << '\n';
+	return pogoj21(podatek) && pogoj22(podatek);
+}
+
+int steviloDobrih2(std::vector<std::string>& podatki) {
+
+	int resitev = 0;
+
+	for (std::string& podatek : podatki)
+		resitev += pogojiVsi2(podatek);
 
 	return resitev;
 }
@@ -90,8 +125,11 @@ int main() {
 	std::vector<std::string> podatki(preberiPodatke("2015/5.txt"));
 
 
-	int resitev1 = steviloDobrih(podatki);
-	std::cout << "Stevilo dobrih je " << resitev1 << ".\n";
+	int resitev1 = steviloDobrih1(podatki);
+	std::cout << "Stevilo dobrih po prvih pogojih je " << resitev1 << ".\n";
+
+	int resitev2 = steviloDobrih2(podatki);
+	std::cout << "Stevilo dobrih po drugih pogojih je " << resitev2 << ".\n";
 
 
 	return 0;
