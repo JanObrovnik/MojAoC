@@ -1,6 +1,8 @@
 /*
 	t = 42:06 min
 	lahko
+	t = 11:29 min
+	lahko (lazje od 1. dela)
 */
 
 #include <iostream>
@@ -97,6 +99,33 @@ int steviloLuci(const std::vector<Ukaz>& podatki) {
 }
 
 
+long long mocLuci(const std::vector<Ukaz>& podatki) {
+
+	long long resitev = 0;
+
+	std::array<std::array<short, 1000>, 1000>* polje = new std::array<std::array<short, 1000>, 1000>();
+
+	for (const Ukaz& ukaz : podatki) {
+		//std::cout << ukaz << '\n';
+
+		for (int x = ukaz.zacetek.x; x <= ukaz.konec.x; x++)
+			for (int y = ukaz.zacetek.y; y <= ukaz.konec.y; y++) {
+
+				if (ukaz.navodilo == "on") (*polje)[y][x]++;
+				else if (ukaz.navodilo == "off" && (*polje)[y][x] > 0) (*polje)[y][x]--;
+				else if (ukaz.navodilo == "toggle") (*polje)[y][x] += 2;
+			}
+	}
+
+	for (const std::array<short, 1000>&arr : (*polje))
+		for (const short& val : arr) {
+			resitev += val;
+		}
+
+	return resitev;
+}
+
+
 int main() {
 
 	std::vector<Ukaz> podatki(preberiPodatke("2015/6.txt"));
@@ -104,6 +133,9 @@ int main() {
 
 	int resitev1 = steviloLuci(podatki);
 	std::cout << "Stevilo prizganih luci je " << resitev1 << ".\n";
+
+	int resitev2 = mocLuci(podatki);
+	std::cout << "Stevilo prizganih luci je " << resitev2 << ".\n";
 
 
 	return 0;
