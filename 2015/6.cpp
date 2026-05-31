@@ -95,6 +95,8 @@ int steviloLuci(const std::vector<Ukaz>& podatki) {
 			resitev += val % 2;
 		}
 
+	delete polje;
+
 	return resitev;
 }
 
@@ -121,6 +123,8 @@ long long mocLuci(const std::vector<Ukaz>& podatki) {
 		for (const short& val : arr) {
 			resitev += val;
 		}
+
+	delete polje;
 
 	return resitev;
 }
