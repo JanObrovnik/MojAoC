@@ -1,6 +1,8 @@
 /*
 	t = 2:04:17 ur
 	nekoliko lahko
+	t = 10:40 min
+	zelo lahko
 */
 
 #include <iostream>
@@ -200,7 +202,27 @@ void iteriraj(std::map<std::string, unsigned short>& mapa, std::vector<Ukaz>& se
 	seznamUkazov.erase(it, seznamUkazov.end());
 }
 
-void simuliraj(std::map<std::string, unsigned short>& mapa, std::vector<Ukaz> seznamUkazov) {
+void simuliraj1(std::map<std::string, unsigned short>& mapa, std::vector<Ukaz> seznamUkazov) {
+
+	zacetniVpis(mapa, seznamUkazov);
+
+	while (!seznamUkazov.empty())
+		iteriraj(mapa, seznamUkazov);
+}
+
+
+void ponastaviUkaz(std::vector<Ukaz>& seznamUkazov, const Ukaz& ponastavljenUkaz) {
+
+	for (Ukaz& ukaz : seznamUkazov)
+		if (ukaz.izhod == ponastavljenUkaz.izhod) {
+			ukaz = ponastavljenUkaz;
+			return;
+		}
+}
+
+void simuliraj2(std::map<std::string, unsigned short>& mapa, std::vector<Ukaz> seznamUkazov, const Ukaz& ponastavljenUkaz) {
+
+	ponastaviUkaz(seznamUkazov, ponastavljenUkaz);
 
 	zacetniVpis(mapa, seznamUkazov);
 
@@ -213,15 +235,17 @@ int main() {
 
 	std::vector<Ukaz> seznamUkazov = preberiPodatke("2015/7.txt");
 
-	std::map<std::string, unsigned short> mapa;
+	std::map<std::string, unsigned short> mapa1, mapa2;
 
 
-	simuliraj(mapa, seznamUkazov);
+	simuliraj1(mapa1, seznamUkazov);
+
+	std::cout << "Vrednost na zici \"a\" je " << mapa1["a"] << ".\n";
 
 
-	std::cout << "Vrednost na zici \"a\" je " << mapa["a"] << ".\n";
+	simuliraj2(mapa2, seznamUkazov, Ukaz({ std::to_string(mapa1["a"]),"->","b" }));
 
-
+	std::cout << "Ponastavljena vrednost na zici \"a\" je " << mapa2["a"] << ".\n";
 
 
 	return 0;
