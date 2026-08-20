@@ -1,6 +1,8 @@
 /*
 	t = 17:42 min
 	zelo lahko
+	t = 12:19 min
+	zelo lahko
 */
 
 #include <iostream>
@@ -8,7 +10,8 @@
 #include <string>
 
 
-void skrajsajVrstico(std::string& vrstica) {
+
+std::string skrajsajVrstico(const std::string& vrstica) {
 
 	std::string resitev;
 
@@ -33,22 +36,48 @@ void skrajsajVrstico(std::string& vrstica) {
 		}
 	}
 
-	vrstica = resitev;
+	return resitev;
+}
+
+std::string razsiriVrstico(const std::string& vrstica) {
+
+	std::string resitev;
+
+	resitev.push_back('\"');
+
+	for (int i = 0; i < vrstica.size(); i++) {
+
+		if (vrstica[i] == '\\') {
+			resitev.push_back('\\');
+			resitev.push_back('\\');
+		}
+		else if (vrstica[i] == '\"') {
+			resitev.push_back('\\');
+			resitev.push_back('\"');
+		}
+		else {
+			resitev.push_back(vrstica[i]);
+		}
+	}
+	
+	resitev.push_back('\"');
+
+	return resitev;
 }
 
 
-int preberiPodatke(const std::string& pot) {
+std::pair<int, int> preberiPodatke(const std::string& pot) {
 
 	std::fstream podatki;
 	podatki.open(pot, std::ios::in);
 
 	if (!podatki.is_open()) {
 		std::cout << "Datoteke \"" << pot << "\" ni bilo mogoce odpreti.\n";
-		return -1;
+		return { -1,-1 };
 	}
 
 	std::string vrstica;
-	int dolzinaZapisa = 0, dolzinaSpomina = 0;
+	int dolzinaZapisa = 0, dolzinaSpomina = 0, dolzinaRazsiritve = 0;
 
 	while (podatki.peek() != EOF) {
 		
@@ -56,24 +85,27 @@ int preberiPodatke(const std::string& pot) {
 
 		dolzinaZapisa += vrstica.size();
 		
-		skrajsajVrstico(vrstica);
+		std::string skrajsanaVrstica = skrajsajVrstico(vrstica);
+		dolzinaSpomina += skrajsanaVrstica.size();
 
-		dolzinaSpomina += vrstica.size();
+		std::string razsirjenaVrstica = razsiriVrstico(vrstica);
+		dolzinaRazsiritve += razsirjenaVrstica.size();
 
-		//std::cout << vrstica << ": " << dolzinaZapisa << " | " << dolzinaSpomina << '\n';
+		//std::cout << vrstica << " | " << skrajsanaVrstica << " | " << razsirjenaVrstica << '\n';
 	}
 
 	podatki.close();
 
-	return dolzinaZapisa - dolzinaSpomina;
+	return { dolzinaZapisa-dolzinaSpomina,dolzinaRazsiritve-dolzinaZapisa };
 }
 
 
 int main() {
 
-	int resitev1 = preberiPodatke("2015/8.txt");
+	std::pair<int, int> resitev = preberiPodatke("2015/8.txt");
 
-	std::cout << "Razlika med dolzino zapisa in dolzino spomina je " << resitev1 << ".\n";
+	std::cout << "Razlika med dolzino zapisa in dolzino spomina je " << resitev.first << ".\n";
+	std::cout << "Razlika med dolzino zapisa zapisa in dolzino zapisa je " << resitev.second << ".\n";
 
 
 	return 0;
