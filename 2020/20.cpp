@@ -1,6 +1,7 @@
 /*
 	t ~ 2:11 ur
 	zelo lahko (bliznjica)
+	t + 25 + 26
 */
 
 #include <iostream>
@@ -10,6 +11,16 @@
 #include <vector>
 #include <map>
 #include <bitset>
+#include <algorithm>
+
+
+class Tocka {
+public:
+	short x, y;
+
+	Tocka() : x(-1), y(-1) {}
+	Tocka(short x, short y) : x(x), y(y) {}
+};
 
 
 enum SMER {
@@ -100,9 +111,9 @@ public:
 };
 
 
-std::vector<Plosca> preberiPodatke(const std::string& pot) {
+std::map<short, Plosca> preberiPodatke(const std::string& pot) {
 
-	std::vector<Plosca> resitev;
+	std::map<short, Plosca> resitev;
 
 
 	std::fstream podatki;
@@ -122,29 +133,29 @@ std::vector<Plosca> preberiPodatke(const std::string& pot) {
 		podatki.ignore(5);
 
 		podatki >> id;
-		resitev.push_back(Plosca(id));
-		podatki.ignore(1);
+		Plosca novaPlosca(id);
 
+		podatki.ignore(1);
 		for (int i = 0; i < 10; i++) {
 			podatki >> vrstica;
-			resitev.back().push_back(vrstica);
+			novaPlosca.push_back(vrstica);
 		}
 		podatki.ignore(2);
+
+		novaPlosca.dolociRobove();
+
+		resitev[id] = novaPlosca;
 	}
 
 
 	podatki.close();
 
 
-	for (Plosca& plosca : resitev)
-		plosca.dolociRobove();
-
-
 	return resitev;
 }
 
 
-long long najdiRobove(std::vector<Plosca*> seznamKazalcev) {
+long long najdiZmnozekRobov(std::vector<Plosca*> seznamKazalcev) {
 
 	long long resitev = 1;
 
@@ -170,27 +181,50 @@ long long najdiRobove(std::vector<Plosca*> seznamKazalcev) {
 }
 
 
+std::map<short, std::vector<short>> najdiPovezavoPlosc(std::vector<Plosca*> seznamKazalcev) {
+
+	std::map<short, std::vector<short>> resitev;
+
+	for (int j = 0; j < seznamKazalcev.size() - 1; j++) {
+		for (int i = j + 1; i < seznamKazalcev.size(); i++) {
+
+			if (seznamKazalcev[j]->steviloUjemanj(seznamKazalcev[i]->dobiRob(SEVER))) { ///////////// ali vse ostale
+				resitev[seznamKazalcev[j]->dobiID()].push_back(seznamKazalcev[i]->dobiID());
+				resitev[seznamKazalcev[i]->dobiID()].push_back(seznamKazalcev[j]->dobiID());
+			}
+		}
+	}
+
+	return resitev;
+}
+
+
 void printSeznamPlosc(const std::vector<Plosca>& seznam) {
 	for (const Plosca& plosca : seznam)
 		plosca.print();
 }
-std::vector<Plosca*> narediSeznamKazalcev(std::vector<Plosca>& seznamPlosc) {
+std::vector<Plosca*> narediSeznamKazalcev(std::map<short, Plosca>& seznamPlosc) {
 	std::vector<Plosca*> resitev;
-	for (Plosca& plosca : seznamPlosc)
-		resitev.push_back(&plosca);
+	//for (Plosca& plosca : seznamPlosc)
+	//	resitev.push_back(&plosca);
+	for (auto it = seznamPlosc.begin(); it != seznamPlosc.end(); it++)
+		resitev.push_back(&(it->second));
 	return resitev;
 }
 
 int main() {
 
-	std::vector<Plosca> seznamPlosc = preberiPodatke("2020/20.txt");
+	std::map<short, Plosca> seznamPlosc = preberiPodatke("2020/20.txt");
 	std::vector<Plosca*> seznamKazalcev = narediSeznamKazalcev(seznamPlosc);
 	//printSeznamPlosc(seznamPlosc);
 
 
-	long long resitev1 = najdiRobove(seznamKazalcev);
+	long long resitev1 = najdiZmnozekRobov(seznamKazalcev);
 	std::cout << "Zmnozek ID robov je " << resitev1 << ".\n";
 
+
+	std::map<short, std::vector<short>> testMap = najdiPovezavoPlosc(seznamKazalcev);
+	std::cout << testMap.size() << '\n';
 
 
 	return 0;
