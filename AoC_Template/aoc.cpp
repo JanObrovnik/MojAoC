@@ -25,7 +25,7 @@ void preberiPodatke(const std::string& pot) {
 
 int main() {
 
-	preberiPodatke("2025/$itemname$.txt");
+	preberiPodatke("2016/$itemname$.txt");
 
 
 	return 0;
