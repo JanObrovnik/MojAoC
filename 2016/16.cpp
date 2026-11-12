@@ -1,7 +1,8 @@
 /*
 	t = 56:45 min
 	zelo lahko
-
+	t = 31:43 min
+	zelo lahko (ista resitev, ampak zelo posacna)
 */
 
 #include <iostream>
